@@ -3,7 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
-	"github.com/M1chlCZ/identicon-generator-go/identicon"
+	"github.com/M1chlCZ/identicon-generator-go"
 	"os"
 	"path/filepath"
 )
