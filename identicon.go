@@ -1,4 +1,4 @@
-package identicon_generator_go
+package identicon
 
 import (
 	"crypto/md5"
