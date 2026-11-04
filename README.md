@@ -4,10 +4,9 @@
 | :-: | :-: | :-: |
 | <img src="docs/previews/symmetric.png" width="180" alt="Symmetric identicon"> | <img src="docs/previews/mosaic.png" width="180" alt="Mosaic identicon"> | <img src="docs/previews/rings.png" width="180" alt="Rings identicon"> |
 
-A small Go library and command-line tool that generates deterministic,
-GitHub-style identicon images. The same seed always produces the same image.
-The images above use the seed `alice@example.com`. The module uses only the Go
-standard library.
+This is a Go identicon generator. Give it a seed and it draws an avatar. Feed it the same seed twice and you get the same picture. The three images above all use `alice@example.com`; only the style changes.
+
+Everything here runs on the Go standard library, with no other dependencies.
 
 ## Install
 
@@ -17,8 +16,7 @@ go get github.com/M1chlCZ/identicon-generator-go@v0.3.0
 
 ## Library
 
-`Render` accepts a string seed. It validates the configuration and returns an
-error instead of panicking:
+`Render` takes a string seed, checks the configuration and returns an error if something is wrong:
 
 ```go
 package main
@@ -45,8 +43,7 @@ func main() {
 }
 ```
 
-The seed is hashed with SHA-256. The output is deterministic across
-architectures. `WritePNG` writes to any `io.Writer`:
+Seeds are hashed with SHA-256, so a seed renders the same on every machine. `WritePNG` writes to any `io.Writer` when you don't want a file:
 
 ```go
 var buffer bytes.Buffer
@@ -57,16 +54,14 @@ if err := identicon.WritePNG(&buffer, img); err != nil {
 
 ### Legacy API
 
-`GenerateIdenticon` and `GenerateIdenticonWithConfig` keep the original
-integer-seed API, MD5 hash, and pixel output:
+`GenerateIdenticon` and `GenerateIdenticonWithConfig` are still there. They keep the original integer seeds, MD5 hash and pixel output:
 
 ```go
 img := identicon.GenerateIdenticon(123)
 identicon.SaveImage(img, "legacy.png")
 ```
 
-The legacy functions panic on an invalid configuration. Use `Render` in new
-code.
+These two panic on an invalid configuration. New code should use `Render`.
 
 ### Configuration
 
@@ -75,16 +70,14 @@ code.
 | `Width` | `420` | Image width in pixels |
 | `Height` | `420` | Image height in pixels |
 | `GridSize` | `5` | Grid dimension, at least 1 |
-| `Grayscale` | `false` | Render gray cells only |
+| `Grayscale` | `false` | Draw grey cells only |
 | `Style` | `StyleSymmetric` | `symmetric`, `mosaic` or `rings` |
 
-`Config.Validate` requires positive dimensions, a positive grid size, and at
-least one pixel per grid cell.
+`Config.Validate` wants positive dimensions, a positive grid size and at least one pixel per grid cell.
 
 ### Styles
 
-`StyleSymmetric` keeps the classic mirrored grid. `StyleMosaic` uses a denser
-mirrored grid with three colors. `StyleRings` draws concentric colored rings:
+`StyleSymmetric` is the classic mirrored grid. `StyleMosaic` uses a denser mirrored grid and three colours. `StyleRings` draws concentric rings:
 
 ```go
 config := identicon.DefaultConfig()
@@ -92,10 +85,11 @@ config.Style = identicon.StyleRings
 img, err := identicon.Render("alice@example.com", config)
 ```
 
-Use `identicon.ParseStyle("mosaic")` when the style comes from configuration
-or a flag.
+When the style comes from a configuration file or a flag, `identicon.ParseStyle("mosaic")` turns the name into a `Style`.
 
 ## CLI
+
+The command writes one identicon or a whole batch:
 
 ```sh
 go run ./cmd/identicon -seed alice@example.com -out avatars
@@ -113,11 +107,10 @@ go run ./cmd/identicon -count 20 -start 1 -out avatars -width 500 -grid 6 -style
 | `-width`, `-w` | `420` | Image width in pixels |
 | `-height` | `420` | Image height in pixels |
 | `-grid`, `-g` | `5` | Grid dimension |
-| `-gray` | `false` | Render grayscale images |
+| `-gray` | `false` | Draw grey images |
 | `-version` | `false` | Print the version |
 
-Batch output uses the names `identicon_001.png`, `identicon_002.png`, and so
-on. A single seed writes `identicon.png` unless `-prefix` changes the name.
+Batches are named `identicon_001.png`, `identicon_002.png`, and so on. One seed writes `identicon.png` unless you pass `-prefix`.
 
 ## Development
 
@@ -127,10 +120,7 @@ go vet ./...
 go build ./...
 ```
 
-The modernization roadmap is in
-[`docs/plans/2026-11-03-identicon-modernization.md`](docs/plans/2026-11-03-identicon-modernization.md).
-It covers batch input, SVG output, the terminal UI, an HTTP avatar service,
-and release binaries.
+The roadmap covers batch input, SVG output, a terminal UI, an HTTP avatar service and release binaries.
 
 ## Support
 
@@ -139,6 +129,6 @@ If this project helps you, you can support its development.
 [![Support me on Ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/m1chl)
 <a href="https://buymeacoffee.com/xdujifyzvt"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy me a coffee" height="30"></a>
 
-## License
+## Licence
 
 MIT License. See [LICENSE](LICENSE).
