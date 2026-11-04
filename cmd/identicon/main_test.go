@@ -14,7 +14,7 @@ func TestRun(t *testing.T) {
 	if err := run(append(args, "-count", "2")); err != nil {
 		t.Fatal(err)
 	}
-	if err := run(append(args, "-seed", "alice", "-prefix", "avatar")); err != nil {
+	if err := run(append(args, "-seed", "alice", "-prefix", "avatar", "-style", "mosaic")); err != nil {
 		t.Fatal(err)
 	}
 

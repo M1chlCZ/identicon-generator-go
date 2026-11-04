@@ -61,6 +61,30 @@ func TestRender(t *testing.T) {
 	}
 }
 
+func TestStyles(t *testing.T) {
+	seen := map[string]bool{}
+	for _, name := range []string{"symmetric", "mosaic", "rings"} {
+		style, err := ParseStyle(name)
+		if err != nil {
+			t.Fatal(err)
+		}
+		config := DefaultConfig()
+		config.Style = style
+		img, err := Render("styles", config)
+		if err != nil {
+			t.Fatal(err)
+		}
+		hash := pixHash(t, img)
+		if seen[hash] {
+			t.Fatalf("style %s duplicated another style", name)
+		}
+		seen[hash] = true
+	}
+	if _, err := ParseStyle("unknown"); err == nil {
+		t.Fatal("ParseStyle accepted an unknown style")
+	}
+}
+
 func TestPNGWriters(t *testing.T) {
 	img, err := Render("writer", DefaultConfig())
 	if err != nil {

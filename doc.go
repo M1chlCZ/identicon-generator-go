@@ -12,5 +12,6 @@
 //	}
 //
 // GenerateIdenticon and GenerateIdenticonWithConfig keep the original
-// integer-seed and MD5 output for existing callers.
+// integer-seed and MD5 output for existing callers. Select a drawing
+// algorithm with Config.Style; the zero value is StyleSymmetric.
 package identicon

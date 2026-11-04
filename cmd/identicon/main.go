@@ -12,7 +12,7 @@ import (
 	identicon "github.com/M1chlCZ/identicon-generator-go"
 )
 
-const version = "0.2.0"
+const version = "0.3.0"
 
 func main() {
 	if err := run(os.Args[1:]); err != nil {
@@ -23,7 +23,7 @@ func main() {
 
 func run(args []string) error {
 	config := identicon.DefaultConfig()
-	var seed, outDir, prefix string
+	var seed, outDir, prefix, styleName string
 	var count, start int
 	var showVersion bool
 
@@ -39,6 +39,7 @@ func run(args []string) error {
 	flags.IntVar(&start, "start", 1, "first seed in batch mode")
 	flags.StringVar(&outDir, "out", ".", "output directory")
 	flags.StringVar(&prefix, "prefix", "identicon", "file name prefix")
+	flags.StringVar(&styleName, "style", "symmetric", "symmetric, mosaic or rings")
 	flags.IntVar(&config.Width, "width", config.Width, "image width in pixels")
 	flags.IntVar(&config.Width, "w", config.Width, "shorthand for -width")
 	flags.IntVar(&config.Height, "height", config.Height, "image height in pixels")
@@ -59,6 +60,11 @@ func run(args []string) error {
 		fmt.Println("identicon", version)
 		return nil
 	}
+	style, err := identicon.ParseStyle(styleName)
+	if err != nil {
+		return err
+	}
+	config.Style = style
 	if err := config.Validate(); err != nil {
 		return err
 	}

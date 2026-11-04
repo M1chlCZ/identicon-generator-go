@@ -1,13 +1,18 @@
 # identicon-generator-go
 
+| Symmetric | Mosaic | Rings |
+| :-: | :-: | :-: |
+| <img src="docs/previews/symmetric.png" width="180" alt="Symmetric identicon"> | <img src="docs/previews/mosaic.png" width="180" alt="Mosaic identicon"> | <img src="docs/previews/rings.png" width="180" alt="Rings identicon"> |
+
 A small Go library and command-line tool that generates deterministic,
 GitHub-style identicon images. The same seed always produces the same image.
-The module uses only the Go standard library.
+The images above use the seed `alice@example.com`. The module uses only the Go
+standard library.
 
 ## Install
 
 ```sh
-go get github.com/M1chlCZ/identicon-generator-go@v0.2.0
+go get github.com/M1chlCZ/identicon-generator-go@v0.3.0
 ```
 
 ## Library
@@ -71,15 +76,30 @@ code.
 | `Height` | `420` | Image height in pixels |
 | `GridSize` | `5` | Grid dimension, at least 1 |
 | `Grayscale` | `false` | Render gray cells only |
+| `Style` | `StyleSymmetric` | `symmetric`, `mosaic` or `rings` |
 
 `Config.Validate` requires positive dimensions, a positive grid size, and at
 least one pixel per grid cell.
+
+### Styles
+
+`StyleSymmetric` keeps the classic mirrored grid. `StyleMosaic` uses a denser
+mirrored grid with three colors. `StyleRings` draws concentric colored rings:
+
+```go
+config := identicon.DefaultConfig()
+config.Style = identicon.StyleRings
+img, err := identicon.Render("alice@example.com", config)
+```
+
+Use `identicon.ParseStyle("mosaic")` when the style comes from configuration
+or a flag.
 
 ## CLI
 
 ```sh
 go run ./cmd/identicon -seed alice@example.com -out avatars
-go run ./cmd/identicon -count 20 -start 1 -out avatars -width 500 -grid 6
+go run ./cmd/identicon -count 20 -start 1 -out avatars -width 500 -grid 6 -style mosaic
 ```
 
 | Flag | Default | Meaning |
@@ -89,6 +109,7 @@ go run ./cmd/identicon -count 20 -start 1 -out avatars -width 500 -grid 6
 | `-start` | `1` | First integer seed in batch mode |
 | `-out` | `.` | Output directory |
 | `-prefix` | `identicon` | File name prefix |
+| `-style` | `symmetric` | `symmetric`, `mosaic` or `rings` |
 | `-width`, `-w` | `420` | Image width in pixels |
 | `-height` | `420` | Image height in pixels |
 | `-grid`, `-g` | `5` | Grid dimension |
@@ -108,8 +129,8 @@ go build ./...
 
 The modernization roadmap is in
 [`docs/plans/2026-11-03-identicon-modernization.md`](docs/plans/2026-11-03-identicon-modernization.md).
-It covers additional generator styles, SVG output, an HTTP avatar service, and
-release binaries.
+It covers batch input, SVG output, the terminal UI, an HTTP avatar service,
+and release binaries.
 
 ## Support
 

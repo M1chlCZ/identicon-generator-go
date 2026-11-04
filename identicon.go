@@ -21,6 +21,8 @@ type Config struct {
 	GridSize int
 	// Grayscale determines if the image should be in grayscale
 	Grayscale bool
+	// Style selects the drawing algorithm. The zero value is StyleSymmetric.
+	Style Style
 }
 
 // DefaultConfig returns a Config with recommended default values
@@ -46,6 +48,8 @@ func (c Config) Validate() error {
 		return fmt.Errorf("width %d is smaller than grid size %d", c.Width, c.GridSize)
 	case c.Height < c.GridSize:
 		return fmt.Errorf("height %d is smaller than grid size %d", c.Height, c.GridSize)
+	case c.Style > StyleRings:
+		return fmt.Errorf("unknown style %d", c.Style)
 	}
 	return nil
 }
@@ -65,7 +69,7 @@ func GenerateIdenticonWithConfig(seed int, config Config) image.Image {
 		panic(err)
 	}
 	hash := md5.Sum([]byte(fmt.Sprintf("%d", seed)))
-	return render(hash[:], config, getColor)
+	return renderSymmetric(hash[:], config, getColor)
 }
 
 // Render generates an identicon from a string seed.
@@ -79,7 +83,14 @@ func Render(seed string, config Config) (image.Image, error) {
 		return nil, err
 	}
 	hash := sha256.Sum256([]byte(seed))
-	return render(hash[:], config, getReadableColor), nil
+	switch config.Style {
+	case StyleMosaic:
+		return renderMosaic(hash[:], config), nil
+	case StyleRings:
+		return renderRings(hash[:], config), nil
+	default:
+		return renderSymmetric(hash[:], config, getReadableColor), nil
+	}
 }
 
 // WritePNG encodes img as a PNG to w.
@@ -87,7 +98,7 @@ func WritePNG(w io.Writer, img image.Image) error {
 	return png.Encode(w, img)
 }
 
-func render(hash []byte, config Config, colorFor func([]byte, bool) color.Color) *image.RGBA {
+func renderSymmetric(hash []byte, config Config, colorFor func([]byte, bool) color.Color) *image.RGBA {
 	img := image.NewRGBA(image.Rect(0, 0, config.Width, config.Height))
 	cellWidth := config.Width / config.GridSize
 	cellHeight := config.Height / config.GridSize
