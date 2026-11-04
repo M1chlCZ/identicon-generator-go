@@ -23,3 +23,10 @@ go.work.sum
 
 # env file
 .env
+
+# IDE files
+.idea/
+
+# Generated images
+/output/
+/dist/

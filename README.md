@@ -1,75 +1,115 @@
-# Go Identicon Generator 🎨
+# identicon-generator-go
 
-A simple and flexible library for generating GitHub-style identicon images in Go. Create unique, deterministic avatars for your users or projects.
+A small Go library and command-line tool that generates deterministic,
+GitHub-style identicon images. The same seed always produces the same image.
+The module uses only the Go standard library.
 
-![Example Identicons](https://github.blog/wp-content/uploads/2013/08/a3c4e2a0-04df-11e3-824c-7378e6550707.png?fit=2384%2C784)
+## Install
 
-## Features
-
-- ✨ Generate unique identicons from any integer seed
-- 🎨 Support for both color and grayscale output
-- 🔧 Customizable image size and grid complexity
-- 💪 Zero external dependencies
-- 🚀 Simple, clean API
-
-## Installation
-
-```bash
-go get github.com/M1chlCZ/identicon-generator-go
+```sh
+go get github.com/M1chlCZ/identicon-generator-go@v0.2.0
 ```
 
-## Quick Start
+## Library
+
+`Render` accepts a string seed. It validates the configuration and returns an
+error instead of panicking:
 
 ```go
 package main
 
 import (
-    "github.com/M1chlCZ/identicon-generator-go"
+	"log"
+
+	identicon "github.com/M1chlCZ/identicon-generator-go"
 )
 
 func main() {
-    // Generate with default settings
-    img := identicon.GenerateIdenticon(123)
-    identicon.SaveImage(img, "simple.png")
+	config := identicon.DefaultConfig()
+	config.Width = 800
+	config.Height = 800
+	config.GridSize = 7
 
-    // Custom configuration
-    config := identicon.DefaultConfig()
-    config.Width = 800
-    config.Height = 800
-    config.GridSize = 7
-    config.Grayscale = true
-
-    img = identicon.GenerateIdenticonWithConfig(123, config)
-    identicon.SaveImage(img, "custom.png")
+	img, err := identicon.Render("alice@example.com", config)
+	if err != nil {
+		log.Fatal(err)
+	}
+	if err := identicon.SaveImage(img, "alice.png"); err != nil {
+		log.Fatal(err)
+	}
 }
 ```
 
-## CLI Tool
-
-The repository includes a command-line tool for batch generating identicons:
-
-```bash
-go run cmd/main.go -w 500 -h 500 -grid 6 -count 10 -gray
-```
-
-### CLI Options
-
-- `-w`, `-width`: Image width (default: 420)
-- `-h`, `-height`: Image height (default: 420)
-- `-g`, `-grid`: Grid size (default: 5)
-- `-c`, `-count`: Number of images to generate (default: 150)
-- `-gray`: Generate grayscale images (default: false)
-
-## Configuration
+The seed is hashed with SHA-256. The output is deterministic across
+architectures. `WritePNG` writes to any `io.Writer`:
 
 ```go
-type Config struct {
-    Width     int  // Width of the generated image in pixels
-    Height    int  // Height of the generated image in pixels
-    GridSize  int  // Complexity of the pattern (e.g., 5 for 5x5 grid)
-    Grayscale bool // Whether to generate grayscale images
+var buffer bytes.Buffer
+if err := identicon.WritePNG(&buffer, img); err != nil {
+	log.Fatal(err)
 }
 ```
+
+### Legacy API
+
+`GenerateIdenticon` and `GenerateIdenticonWithConfig` keep the original
+integer-seed API, MD5 hash, and pixel output:
+
+```go
+img := identicon.GenerateIdenticon(123)
+identicon.SaveImage(img, "legacy.png")
+```
+
+The legacy functions panic on an invalid configuration. Use `Render` in new
+code.
+
+### Configuration
+
+| Field | Default | Meaning |
+| --- | --- | --- |
+| `Width` | `420` | Image width in pixels |
+| `Height` | `420` | Image height in pixels |
+| `GridSize` | `5` | Grid dimension, at least 1 |
+| `Grayscale` | `false` | Render gray cells only |
+
+`Config.Validate` requires positive dimensions, a positive grid size, and at
+least one pixel per grid cell.
+
+## CLI
+
+```sh
+go run ./cmd/identicon -seed alice@example.com -out avatars
+go run ./cmd/identicon -count 20 -start 1 -out avatars -width 500 -grid 6
+```
+
+| Flag | Default | Meaning |
+| --- | --- | --- |
+| `-seed` | empty | Render one identicon from a string seed |
+| `-count`, `-c` | `150` | Number of images in batch mode |
+| `-start` | `1` | First integer seed in batch mode |
+| `-out` | `.` | Output directory |
+| `-prefix` | `identicon` | File name prefix |
+| `-width`, `-w` | `420` | Image width in pixels |
+| `-height` | `420` | Image height in pixels |
+| `-grid`, `-g` | `5` | Grid dimension |
+| `-gray` | `false` | Render grayscale images |
+| `-version` | `false` | Print the version |
+
+Batch output uses the names `identicon_001.png`, `identicon_002.png`, and so
+on. A single seed writes `identicon.png` unless `-prefix` changes the name.
+
+## Development
+
+```sh
+go test -race ./...
+go vet ./...
+go build ./...
+```
+
+The modernization roadmap is in
+[`docs/plans/2026-11-03-identicon-modernization.md`](docs/plans/2026-11-03-identicon-modernization.md).
+It covers additional generator styles, SVG output, an HTTP avatar service, and
+release binaries.
 
 ## Support
 
@@ -80,11 +120,4 @@ If this project helps you, you can support its development.
 
 ## License
 
-MIT License - feel free to use this in your own projects!
-
-## Contributing
-
-Contributions are welcome! Feel free to submit issues and pull requests.
-
----
-Made with ❤️ in Go
+MIT License. See [LICENSE](LICENSE).
